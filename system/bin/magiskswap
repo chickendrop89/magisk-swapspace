@@ -1,0 +1,177 @@
+#!/system/bin/sh
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Copyright (C) 2024  chickendrop89
+
+NAME="$1";
+
+# Filter numbers from the VALUE parameter
+VALUE=$(echo "$2" | tr -d -c 0-9);
+OPTIONALVALUE=$(echo "$3" | tr -d -c 0-9);
+
+# Import common functions from file
+. "/data/adb/modules/magisk-swapspace/common.sh";
+
+# Abort - Print message and exit
+abort(){ 
+    cprint "$1";
+
+    # If the second parameter is 'rm', delete swap
+    if [ "$2" = "rm" ];
+        then rm -rf "$SWAPFILE"
+    fi 
+
+    exit 1
+}
+
+# Create swapfile and swaps-on
+createSwapSpace(){
+    COUNT="$1";
+    PRIORITY="$2";
+    COUNT_KB="$(expr "$COUNT" \* 1000000)";
+
+    # If priority parameter is specified, use it when swapping-on
+    if [ -z "$PRIORITY" ];
+        then
+            unset PRIORITY
+            modifyProp SWAP-PRIORITY false
+        else
+            cprint "(magisk-swapspaace) will have ($PRIORITY) priority"
+            modifyProp SWAP-PRIORITY "$PRIORITY"
+            PRIORITY="-p $PRIORITY"
+    fi
+
+    cprint "Swapoff and delete existing swapfile"
+        swapoff "$SWAPFILE"
+        rm -rf "$SWAPFILE" || abort "Cannot remove swapfile!"
+
+    cprint "Create $COUNT GB swapfile"
+        dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$COUNT_KB" 1>/dev/null
+
+    cprint "Setting-up swapfile"
+        mkswap "$SWAPFILE" 1>/dev/null
+        chown root:root "$SWAPFILE"
+
+    # Use the toybox version of the "swapon" applet as it has the priority switch
+    cprint "Loading swapfile (It will take a while)"
+        toybox swapon $PRIORITY $SWAPFILE
+
+    modifyProp ENABLE-SWAP true
+    cprint "(magisk-swapspace) has been enabled"
+}
+
+case $NAME in
+    "add")
+        if [ -n "$OPTIONALVALUE" ] && [ ! "$OPTIONALVALUE" -ge 0 ] || [ ! "$OPTIONALVALUE" -le 32767 ];
+            then
+                abort "Number (Priority) is not in range (0-32767)"
+        fi
+        if [ -z "$VALUE" ];
+            then 
+                abort "VALUE parameter is missing, or does not contain a number!"
+            else 
+                createSwapSpace "$VALUE" "$OPTIONALVALUE" 2>/dev/null
+        fi
+    ;;
+    "remove")
+        cprint "Swapoff and delete existing swapfile"
+            swapoff "$SWAPFILE"
+            rm -rf "$SWAPFILE" || abort "Cannot remove swapfile!"
+
+        modifyProp ENABLE-SWAP false
+        modifyProp SWAP-PRIORITY false
+        cprint "(magisk-swapspace) has been disabled"
+    ;;
+    "status")
+        if [ "$(readProp ENABLE-SWAP 2>/dev/null)" = "true" ];
+            then 
+                cprint "magisk-swapspace is actived with $(du -shH "$SWAPFILE" | awk '{ print $1 }')" 2>/dev/null
+                printf "\n%s" "$(cat /proc/swaps || return)"
+            else 
+                cprint "(magisk-swapspace) is not configured/disabled"
+        fi
+    ;;
+    "swappiness")
+        SWAPPINESS_BACKUP="$(readProp "BACKUP-SWAP")"
+
+        if [ -z "$VALUE" ];
+            then
+                cprint "Swappiness has been set to kernel default"
+                    setKernelTune "$SWAPPINESS_SYSPATH" "$SWAPPINESS_BACKUP"
+
+                # Delete Backup and the property itself
+                deleteProp "BACKUP-SWAP"
+                deleteProp "SWAPPINESS"
+            return
+        fi
+        if [ "$VALUE" -ge 1 ] && [ "$VALUE" -le 200 ];
+            then
+                if [ "$VALUE" -gt 100 ];
+                    then cprint "Warning: +100 swappiness is only compatible with Linux 5.7 and later"
+                         cprint "Warning: and might cause excessive battery drain and storage wear"
+                fi
+
+                cprint "Swappiness has been set to $VALUE"
+                    setKernelTune "$SWAPPINESS_SYSPATH" "$VALUE"
+
+                # Backup first, so the value can be reset without needing a reboot
+                modifyProp "BACKUP-SWAP" "$(cat "$SWAPPINESS_SYSPATH")"
+                modifyProp "SWAPPINESS" "$VALUE"
+            else
+                abort "Number is not in range (1-200)"
+        fi
+    ;;
+    "vfs-cache-pressure")
+        VFS_CACHE_PRESSURE_BACKUP="$(readProp "BACKUP-VFS")"
+
+        if [ -z "$VALUE" ];
+            then
+                cprint "VFS Cache Pressure has been set to kernel default"
+                    setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VFS_CACHE_PRESSURE_BACKUP"
+
+                # Delete Backup and the property itself
+                deleteProp "BACKUP-VFS"
+                deleteProp "VFS-CACHE-PRESSURE"
+            return
+        fi
+        if [ "$VALUE" -ge 1 ];
+            then
+                cprint "VFS Cache Pressure has been set to $VALUE"
+                    setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VALUE"
+
+                # Backup first, so the value can be reset without needing a reboot
+                modifyProp "BACKUP-VFS" "$(cat "$VFS_CACHE_PRESSURE_SYSPATH")"
+                modifyProp "VFS-CACHE-PRESSURE" "$VALUE"
+            else
+                abort "Number is not in range (1-∞)"
+        fi
+    ;;
+    *)
+        echo "(magisk-swapspace) by chickendrop89                            " \ "\n" \
+             "usage: magiskswap <NAME> <VALUE> [OPTIONAL]                    " \ "\n" \
+             "                                                               " \ "\n" \
+             "add <SIZE GB> [PRIORITY]                                       " \ "\n" \
+             "     - Creates swapfile and swaps-on                           " \ "\n" \
+             "                                                               " \ "\n" \
+             "remove              - Removes swapfile and swaps-off           " \ "\n" \
+             "status              - Prints swapfile size and status          " \ "\n" \
+             "                                                               " \ "\n" \
+             "swappiness <1-200>                                             " \ "\n" \
+             "    - Controls how agressively Linux swaps anonymous memory    " \ "\n" \
+             "                                                               " \ "\n" \
+             "vfs-cache-pressure <1-∞>                                       " \ "\n" \
+             "    - Controls the tendency of the kernel to reclaim the memory"
+    ;;
+esac
