@@ -31,4 +31,5 @@ Before tinkering with `swappiness` and `vfs-cache-pressure`, you should understa
 Using `swap` on older eMMC/UFS chips is **not recomended** and could result in highly reduced lifespan ⚠️
 
 ## Requirements
-- Magisk 20.4+ is installed
+- Magisk 20.4+ 
+- KernelSU v0.6.7+ 
