@@ -73,5 +73,5 @@ setKernelTune() {
     FILE="$1"
     VALUE="$2"
 
-    echo "$FILE" > "$VALUE"
+    echo "$VALUE" > "$FILE"
 }
