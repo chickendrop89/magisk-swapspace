@@ -16,10 +16,8 @@
 # Copyright (C) 2024  chickendrop89
 
 NAME="$1";
-
-# Filter numbers from the VALUE parameter
-VALUE=$(echo "$2" | tr -d -c 0-9);
-OPTIONALVALUE=$(echo "$3" | tr -d -c 0-9);
+VALUE=$2;
+OPTIONALVALUE="$3";
 
 # Import common functions from file
 . "/data/adb/modules/magisk-swapspace/common.sh";
@@ -105,7 +103,17 @@ case $NAME in
     ;;
     "swappiness")
         SWAPPINESS_BACKUP="$(readProp "BACKUP-SWAP")"
+        CURRENT_SWAPPINESS="$(cat "$SWAPPINESS_SYSPATH")"
 
+        if [ "$VALUE" = "show" ];
+            then
+                if [ "$SWAPPINESS_BACKUP" ];
+                    then cprint "Original/Default VM swappiness: $SWAPPINESS_BACKUP"
+                fi
+
+                cprint "Current VM swappiness: $CURRENT_SWAPPINESS"
+            return
+        fi
         if [ -z "$VALUE" ];
             then
                 cprint "Swappiness has been set to kernel default"
@@ -135,7 +143,17 @@ case $NAME in
     ;;
     "vfs-cache-pressure")
         VFS_CACHE_PRESSURE_BACKUP="$(readProp "BACKUP-VFS")"
+        CURRENT_VFS_CACHE_PRESSURE="$(cat "$VFS_CACHE_PRESSURE_SYSPATH")"
 
+        if [ "$VALUE" = "show" ];
+            then
+                if [ "$VFS_CACHE_PRESSURE_BACKUP" ];
+                    then cprint "Original/Default VM swappiness: $VFS_CACHE_PRESSURE_BACKUP"
+                fi
+
+                cprint "Current virtual memory swappiness: $CURRENT_VFS_CACHE_PRESSURE"
+            return
+        fi
         if [ -z "$VALUE" ];
             then
                 cprint "VFS Cache Pressure has been set to kernel default"
