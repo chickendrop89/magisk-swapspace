@@ -131,12 +131,12 @@ case $NAME in
                          cprint "Warning: and might cause excessive battery drain and storage wear"
                 fi
 
-                cprint "Swappiness has been set to $VALUE"
-                    setKernelTune "$SWAPPINESS_SYSPATH" "$VALUE"
-
                 # Backup first, so the value can be reset without needing a reboot
                 modifyProp "BACKUP-SWAP" "$(cat "$SWAPPINESS_SYSPATH")"
-                modifyProp "SWAPPINESS" "$VALUE"
+
+                cprint "Swappiness has been set to $VALUE"
+                    setKernelTune "$SWAPPINESS_SYSPATH" "$VALUE"
+                    modifyProp "SWAPPINESS" "$VALUE"
             else
                 abort "Number is not in range (1-200)"
         fi
@@ -166,12 +166,12 @@ case $NAME in
         fi
         if [ "$VALUE" -ge 1 ];
             then
+                 # Backup first, so the value can be reset without needing a reboot
+                modifyProp "BACKUP-VFS" "$(cat "$VFS_CACHE_PRESSURE_SYSPATH")"
+
                 cprint "VFS Cache Pressure has been set to $VALUE"
                     setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VALUE"
-
-                # Backup first, so the value can be reset without needing a reboot
-                modifyProp "BACKUP-VFS" "$(cat "$VFS_CACHE_PRESSURE_SYSPATH")"
-                modifyProp "VFS-CACHE-PRESSURE" "$VALUE"
+                    modifyProp "VFS-CACHE-PRESSURE" "$VALUE"
             else
                 abort "Number is not in range (1-∞)"
         fi
