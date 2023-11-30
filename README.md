@@ -16,10 +16,10 @@ Download the module archive, and flash it in Magisk app, or using command line
  remove              - Removes swapfile and swaps-off             
  status              - Prints swapfile size and status            
                                                                   
- swappiness <1-200> <blank to reset>                              
+ swappiness <1-200> [show] [reset]                                
      - Controls how agressively Linux swaps anonymous memory      
                                                                   
- vfs-cache-pressure <1-∞> <blank to reset>                        
+ vfs-cache-pressure <1-∞> [show] [reset]                          
      - Controls the tendency of the kernel to reclaim the memory
 ```
 

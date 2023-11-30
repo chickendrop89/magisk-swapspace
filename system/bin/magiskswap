@@ -187,10 +187,10 @@ case $NAME in
              "remove              - Removes swapfile and swaps-off           " \ "\n" \
              "status              - Prints swapfile size and status          " \ "\n" \
              "                                                               " \ "\n" \
-             "swappiness <1-200> <blank to reset>                            " \ "\n" \
+             "swappiness <1-200> [show] [reset]                              " \ "\n" \
              "    - Controls how agressively Linux swaps anonymous memory    " \ "\n" \
              "                                                               " \ "\n" \
-             "vfs-cache-pressure <1-∞> <blank to reset>                      " \ "\n" \
+             "vfs-cache-pressure <1-∞> [show] [reset]                        " \ "\n" \
              "    - Controls the tendency of the kernel to reclaim the memory" \ "\n" \
              "                                                               " \ "\n" \
     ;;
