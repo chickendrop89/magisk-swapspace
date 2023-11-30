@@ -114,9 +114,9 @@ case $NAME in
                 cprint "Current VM swappiness: $CURRENT_SWAPPINESS"
             return
         fi
-        if [ -z "$VALUE" ];
+        if [ "$VALUE" = "reset" ];
             then
-                cprint "Swappiness has been set to kernel default"
+                cprint "Swappiness has been set to the old value"
                     setKernelTune "$SWAPPINESS_SYSPATH" "$SWAPPINESS_BACKUP"
 
                 # Delete Backup and the property itself
@@ -154,9 +154,9 @@ case $NAME in
                 cprint "Current virtual memory swappiness: $CURRENT_VFS_CACHE_PRESSURE"
             return
         fi
-        if [ -z "$VALUE" ];
+        if [ "$VALUE" = "reset" ];
             then
-                cprint "VFS Cache Pressure has been set to kernel default"
+                cprint "VFS Cache Pressure has been reset to the old value"
                     setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VFS_CACHE_PRESSURE_BACKUP"
 
                 # Delete Backup and the property itself
