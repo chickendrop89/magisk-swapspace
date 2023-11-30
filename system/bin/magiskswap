@@ -101,6 +101,22 @@ case $NAME in
                 cprint "(magisk-swapspace) is not configured/disabled"
         fi
     ;;
+    "swapon")
+        if toybox swapon "$SWAPFILE";
+            then cprint "Successfully performed a swap-on operation";
+            else cprint "Couldn't swap-on, maybe it's already mounted?";
+        fi
+
+        cprint "(Hint): Temporarily swap-off using (\"magiskswap swapoff\")"
+    ;;
+    "swapoff")        
+        if toybox swapoff "$SWAPFILE";
+            then cprint "Successfully performed a temporary swap-off operation";
+            else cprint "Couldn't swap-off, maybe it's already dismounted?";
+        fi
+
+        cprint "(Hint): Swap-on using (\"magiskswap swapon\")"
+    ;;
     "swappiness")
         SWAPPINESS_BACKUP="$(readProp "BACKUP-SWAP")"
         CURRENT_SWAPPINESS="$(cat "$SWAPPINESS_SYSPATH")"
@@ -177,7 +193,7 @@ case $NAME in
         fi
     ;;
     *)
-        echo "                                                               " \ "\n" \
+       echo "                                                               " \ "\n" \
              "(magisk-swapspace) by chickendrop89                            " \ "\n" \
              "usage: magiskswap <NAME> <VALUE> [OPTIONAL]                    " \ "\n" \
              "                                                               " \ "\n" \
@@ -192,6 +208,6 @@ case $NAME in
              "                                                               " \ "\n" \
              "vfs-cache-pressure <1-∞> [show] [reset]                        " \ "\n" \
              "    - Controls the tendency of the kernel to reclaim the memory" \ "\n" \
-             "                                                               " \ "\n" \
+             "                                                               " \ "\n" \ 
     ;;
 esac
