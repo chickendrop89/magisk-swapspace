@@ -96,7 +96,7 @@ case $NAME in
         if [ "$(readProp ENABLE-SWAP 2>/dev/null)" = "true" ];
             then 
                 cprint "magisk-swapspace is actived with $(du -shH "$SWAPFILE" | awk '{ print $1 }')" 2>/dev/null
-                printf "\n%s" "$(cat /proc/swaps || return)"
+                printf "\n%s\n" "$(cat /proc/swaps || return)"
             else 
                 cprint "(magisk-swapspace) is not configured/disabled"
         fi
