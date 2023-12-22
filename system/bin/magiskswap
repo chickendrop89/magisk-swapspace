@@ -38,7 +38,6 @@ abort(){
 createSwapSpace(){
     COUNT="$1";
     PRIORITY="$2";
-    COUNT_KB="$(expr "$COUNT" \* 1000000)";
 
     # If priority parameter is specified, use it when swapping-on
     if [ -z "$PRIORITY" ];
@@ -51,16 +50,30 @@ createSwapSpace(){
             PRIORITY="-p $PRIORITY"
     fi
 
-    cprint "Swapoff and delete existing swapfile"
-        swapoff "$SWAPFILE"
-        rm -rf "$SWAPFILE" || abort "Cannot remove swapfile!"
+    if ! [ "$VALUE" = "keep" ];
+        then
+            COUNT_KB="$(expr "$COUNT" \* 1000000)";
 
-    cprint "Create $COUNT GB swapfile"
-        dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$COUNT_KB" 1>/dev/null
+            cprint "Swapoff and delete existing swapfile"
+                swapoff "$SWAPFILE"
+                rm -rf "$SWAPFILE" || abort "Cannot remove swapfile!"
 
-    cprint "Setting-up swapfile"
-        mkswap "$SWAPFILE" 1>/dev/null
-        chown root:root "$SWAPFILE"
+            cprint "Create $COUNT GB swapfile"
+                dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$COUNT_KB" 1>/dev/null
+
+            cprint "Setting-up swapfile"
+                mkswap "$SWAPFILE" 1>/dev/null
+                chown root:root "$SWAPFILE"
+        else
+            if [ $(readProp "ENABLE-SWAP") = true ];
+                then
+                    abort "magisk-swapspace is already enabled"
+            fi 
+            if ! [ -f $SWAPFILE ];
+                then
+                    abort "There is no existing swapfile"
+            fi
+    fi
 
     # Use the toybox version of the "swapon" applet as it has the priority switch
     cprint "Loading swapfile (It will take a while)"
@@ -68,6 +81,9 @@ createSwapSpace(){
 
     modifyProp ENABLE-SWAP true
     cprint "(magisk-swapspace) has been enabled"
+
+    # Exit the script and stop execution of later code
+    exit 0
 }
 
 case $NAME in
@@ -75,6 +91,10 @@ case $NAME in
         if [ -n "$OPTIONALVALUE" ] && [ ! "$OPTIONALVALUE" -ge 0 ] || [ ! "$OPTIONALVALUE" -le 32767 ];
             then
                 abort "Number (Priority) is not in range (0-32767)"
+        fi
+        if [ "$VALUE" = "keep" ];
+            then
+                createSwapSpace "keep" "$OPTIONALVALUE" 2>/dev/null 
         fi
         if [ -z "$VALUE" ];
             then 
@@ -84,9 +104,15 @@ case $NAME in
         fi
     ;;
     "remove")
-        cprint "Swapoff and delete existing swapfile"
-            swapoff "$SWAPFILE"
-            rm -rf "$SWAPFILE" || abort "Cannot remove swapfile!"
+        if [ "$VALUE" = "keep" ];
+            then
+                cprint "Swapoff but keep the swapfile"
+                    swapoff "$SWAPFILE"
+            else
+                cprint "Swapoff and delete existing swapfile"
+                    swapoff "$SWAPFILE"
+                    rm -rf "$SWAPFILE" || abort "Cannot remove swapfile!"
+        fi
 
         modifyProp ENABLE-SWAP false
         modifyProp SWAP-PRIORITY false
