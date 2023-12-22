@@ -7,23 +7,28 @@ Download the module archive, and flash it in Magisk app, or using command line
 
 ## Usage:
 ```
-(magisk-swapspace) by chickendrop89                              
-usage: magiskswap <NAME> <VALUE> [OPTIONAL]                      
-                                                                  
-add <size in GB> [priority]                                      
-     - Creates swapfile and swaps-on                             
-                                                                  
-remove   - Permanently swaps-off and deletes swapfile            
-status   - Prints swapfile size and status                       
-                                                                  
-swapoff  - Temporarily swaps-off (clears after reboot)           
-swapon   - Simply swaps-on, typically after the command above    
-                                                                  
-swappiness <1-200> [show] [reset]                                
-     - Controls how agressively Linux swaps anonymous memory      
-                                                                  
-vfs-cache-pressure <1-∞> [show] [reset]                          
-     - Controls the tendency of the kernel to reclaim the memory                    
+magisk-swapspace by chickendrop89
+usage: magiskswap <NAME> <VALUE> [OPTIONAL]
+
+add <size in GB> [priority] [keep]
+  - Creates swapfile and swaps-on
+
+remove [keep]   
+  - Permanently swaps-off and deletes swapfile
+
+status [swapon] [swapoff]
+  - Prints swapfile size and status
+
+swappiness <1-200> [show] [reset]
+  - Controls how agressively Linux swaps anonymous memory
+
+vfs-cache-pressure <1-∞> [show] [reset] 
+  - Controls the tendency of the kernel to reclaim the memory
+
+Notes:
+- [remove keep, add keep]: 
+ Instead of deleting, swap-off permanently but keep the file,
+ Later, use "magiskswap add keep" to use the old swapfile         
 ```
 
 ## Notice:

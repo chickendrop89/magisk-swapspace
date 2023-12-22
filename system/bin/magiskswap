@@ -219,24 +219,31 @@ case $NAME in
         fi
     ;;
     *)
-        echo "                                                               " \ "\n" \
-             "(magisk-swapspace) by chickendrop89                            " \ "\n" \
-             "usage: magiskswap <NAME> <VALUE> [OPTIONAL]                    " \ "\n" \
-             "                                                               " \ "\n" \
-             "add <size in GB> [priority]                                    " \ "\n" \
-             "     - Creates swapfile and swaps-on                           " \ "\n" \
-             "                                                               " \ "\n" \
-             "remove   - Permanently swaps-off and deletes swapfile          " \ "\n" \
-             "status   - Prints swapfile size and status                     " \ "\n" \
-             "                                                               " \ "\n" \
-             "swapoff  - Temporarily swaps-off (clears after reboot)         " \ "\n" \
-             "swapon   - Simply swaps-on, typically after the command above  " \ "\n" \
-             "                                                               " \ "\n" \
-             "swappiness <1-200> [show] [reset]                              " \ "\n" \
-             "    - Controls how agressively Linux swaps anonymous memory    " \ "\n" \
-             "                                                               " \ "\n" \
-             "vfs-cache-pressure <1-∞> [show] [reset]                        " \ "\n" \
-             "    - Controls the tendency of the kernel to reclaim the memory" \ "\n" \
-             "                                                               " \ "\n" \
+        cat << EOT
+
+magisk-swapspace by chickendrop89
+usage: magiskswap <NAME> <VALUE> [OPTIONAL]
+
+add <size in GB> [priority] [keep]
+  - Creates swapfile and swaps-on
+
+remove [keep]   
+  - Permanently swaps-off and deletes swapfile
+
+status [swapon] [swapoff]
+  - Prints swapfile size and status
+
+swappiness <1-200> [show] [reset]
+  - Controls how agressively Linux swaps anonymous memory
+
+vfs-cache-pressure <1-∞> [show] [reset] 
+  - Controls the tendency of the kernel to reclaim the memory
+
+Notes:
+- [remove keep, add keep]: 
+ Instead of deleting, swap-off permanently but keep the file,
+ Later, use "magiskswap add keep" to use the old swapfile
+
+EOT
     ;;
 esac
