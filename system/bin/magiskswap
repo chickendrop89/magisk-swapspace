@@ -119,6 +119,25 @@ case $NAME in
         cprint "(mss) has been disabled"
     ;;
     "status")
+        if [ "$VALUE" = "swapon" ];
+            then
+                if toybox swapon "$SWAPFILE";
+                    then cprint "successfully performed a swap-on operation";
+                    else cprint "couldn't swap-on, maybe it's already mounted?";
+                fi
+
+                cprint "(hint): temporarily swap-off using (\"magiskswap status swapoff\")"
+
+        elif [ "$VALUE" = "swapoff" ];
+            then
+                if toybox swapon "$SWAPFILE";
+                    then cprint "successfully performed a temporary swap-off operation";
+                    else cprint "couldn't swap-off, maybe it's already dismounted?";
+                fi
+
+                cprint "(Hint): swap-on using (\"magiskswap status swapon\")"
+        fi
+
         if [ "$(readProp ENABLE-SWAP 2>/dev/null)" = "true" ];
             then 
                 cprint "(mss) is enabled with with $(du -sh "$SWAPFILE" | awk '{ print $1 }')" 2>/dev/null
@@ -126,22 +145,6 @@ case $NAME in
             else 
                 cprint "(mss) is not configured/disabled"
         fi
-    ;;
-    "swapon")
-        if toybox swapon "$SWAPFILE";
-            then cprint "successfully performed a swap-on operation";
-            else cprint "couldn't swap-on, maybe it's already mounted?";
-        fi
-
-        cprint "(hint): temporarily swap-off using (\"magiskswap swapoff\")"
-    ;;
-    "swapoff")        
-        if toybox swapoff "$SWAPFILE";
-            then cprint "successfully performed a temporary swap-off operation";
-            else cprint "couldn't swap-off, maybe it's already dismounted?";
-        fi
-
-        cprint "(Hint): swap-on using (\"magiskswap swapon\")"
     ;;
     "swappiness")
         SWAPPINESS_BACKUP="$(readProp "BACKUP-SWAP")"
