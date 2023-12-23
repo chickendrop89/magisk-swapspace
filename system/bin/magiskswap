@@ -24,13 +24,7 @@ OPTIONALVALUE="$3";
 
 # Abort - Print message and exit
 abort(){ 
-    cprint "$1";
-
-    # If the second parameter is 'rm', delete swap
-    if [ "$2" = "rm" ];
-        then rm -rf "$SWAPFILE"
-    fi 
-
+    cprint "$1"
     exit 1
 }
 
@@ -50,68 +44,70 @@ createSwapSpace(){
             PRIORITY="-p $PRIORITY"
     fi
 
-    if ! [ "$VALUE" = "keep" ];
+    # If the swapfile was preserved, and doesn't need to be recreated
+    if [ "$VALUE" = "keep" ];
         then
-            COUNT_KB="$(expr "$COUNT" \* 1000000)";
+            if ! [ -f "$SWAPFILE" ];
+                then abort "no existing swapfile"
+
+            elif [ "$(readProp "ENABLE-SWAP")" = true ];
+                then abort "swapfile exists and is currently mounted"
+            fi
+        else
+            # 1 Gigabyte = 1,048,576 Kilobytes
+            COUNT_KB="$((COUNT * 1048576))";
 
             cprint "swap-off and delete existing swapfile"
-                swapoff "$SWAPFILE"
-                rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
+            swapoff "$SWAPFILE"
+            rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
 
             cprint "create $COUNT GB swapfile"
-                dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$COUNT_KB" 1>/dev/null
+            dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$COUNT_KB" 1>/dev/null
 
             cprint "setting-up swapfile"
-                mkswap "$SWAPFILE" 1>/dev/null
-                chown root:root "$SWAPFILE"
-        else
-            if [ $(readProp "ENABLE-SWAP") = true ];
-                then
-                    abort "already enabled"
-            fi 
-            if ! [ -f $SWAPFILE ];
-                then
-                    abort "no existing swapfile"
-            fi
+            mkswap "$SWAPFILE" 1>/dev/null
+            chown root:root "$SWAPFILE"
     fi
 
     # Use the toybox version of the "swapon" applet as it has the priority switch
-    cprint "loading swapfile (It will take a while)"
+    cprint "mounting swapfile (It will take a while)"
         toybox swapon $PRIORITY $SWAPFILE
 
     modifyProp ENABLE-SWAP true
     cprint "(mss) has been enabled"
-
-    # Exit the script and stop execution of later code
-    exit 0
 }
 
 case $NAME in
     "add")
-        if [ -n "$OPTIONALVALUE" ] && [ ! "$OPTIONALVALUE" -ge 0 ] || [ ! "$OPTIONALVALUE" -le 32767 ];
-            then
-                abort "(priority) is not in range (0-32767)"
+        # OPTIONALVALUE parameters
+        if [ -n "$OPTIONALVALUE" ] && ! echo "$OPTIONALVALUE" | grep -q -E '^[0-9]+$';
+            then abort "PRIORITY parameter must be a number (0-32767)"
+
+        elif [ -n "$OPTIONALVALUE" ] && [ ! "$OPTIONALVALUE" -ge 0 ] || [ ! "$OPTIONALVALUE" -le 32767 ];
+            then abort "PRIORITY parameter is not in range (0-32767)"
         fi
+
+        # VALUE parameters
         if [ "$VALUE" = "keep" ];
-            then
-                createSwapSpace "keep" "$OPTIONALVALUE" 2>/dev/null 
+            then createSwapSpace "keep" "$OPTIONALVALUE" 2>/dev/null
+
+        elif [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
+            then abort "VALUE parameter must be a number (0-100)"
+
+        elif [ -n "$VALUE" ] && [ "$VALUE" -ge 1 ] && [ "$VALUE" -le 100 ];
+            then createSwapSpace "$VALUE" "$OPTIONALVALUE" 2>/dev/null
+            else abort "VALUE parameter is missing, or not in range (0-100)"
         fi
-        if [ -z "$VALUE" ];
-            then 
-                abort "VALUE parameter is missing, or does not contain a number!"
-            else 
-                createSwapSpace "$VALUE" "$OPTIONALVALUE" 2>/dev/null
-        fi
-    ;;
+    ;; 
     "remove")
         if [ "$VALUE" = "keep" ];
             then
                 cprint "swap-off, but keep the swapfile"
-                    swapoff "$SWAPFILE"
+                swapoff "$SWAPFILE"
             else
                 cprint "swap-off, and remove swapfile"
-                    swapoff "$SWAPFILE"
-                    rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
+                swapoff "$SWAPFILE"
+                rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
         fi
 
         modifyProp ENABLE-SWAP false
@@ -121,33 +117,39 @@ case $NAME in
     "status")
         if [ "$VALUE" = "swapon" ];
             then
+                cprint "performing a swap-on operation"
+
                 if toybox swapon "$SWAPFILE";
                     then cprint "successfully performed a swap-on operation";
                     else cprint "couldn't swap-on, maybe it's already mounted?";
                 fi
 
                 cprint "(hint): temporarily swap-off using (\"magiskswap status swapoff\")"
+            return
 
         elif [ "$VALUE" = "swapoff" ];
             then
-                if toybox swapon "$SWAPFILE";
+                cprint "performing a temporary swap-off operation"
+ 
+                if toybox swapoff "$SWAPFILE";
                     then cprint "successfully performed a temporary swap-off operation";
                     else cprint "couldn't swap-off, maybe it's already dismounted?";
                 fi
 
-                cprint "(Hint): swap-on using (\"magiskswap status swapon\")"
+                cprint "(hint): swap-on using (\"magiskswap status swapon\")"
+            return
         fi
 
-        if [ "$(readProp ENABLE-SWAP 2>/dev/null)" = "true" ];
+        if [ "$(readProp ENABLE-SWAP)" = "true" ];
             then 
-                cprint "(mss) is enabled with with $(du -sh "$SWAPFILE" | awk '{ print $1 }')" 2>/dev/null
+                cprint "(mss) is enabled with with $(du -sh "$SWAPFILE" | awk '{ print $1 }')"
                 printf "\n%s\n" "$(cat /proc/swaps || return)"
             else 
                 cprint "(mss) is not configured/disabled"
         fi
     ;;
     "swappiness")
-        SWAPPINESS_BACKUP="$(readProp "BACKUP-SWAP")"
+        SWAPPINESS_BACKUP="$(readProp BACKUP-SWAP)"
         CURRENT_SWAPPINESS="$(cat "$SWAPPINESS_SYSPATH")"
 
         if [ "$VALUE" = "show" ];
@@ -158,32 +160,42 @@ case $NAME in
 
                 cprint "current VM swappiness: $CURRENT_SWAPPINESS"
             return
-        fi
-        if [ "$VALUE" = "reset" ];
-            then
-                cprint "swappiness has been set to the old value"
-                    setKernelTune "$SWAPPINESS_SYSPATH" "$SWAPPINESS_BACKUP"
 
-                # Delete Backup and the property itself
-                deleteProp "BACKUP-SWAP"
-                deleteProp "SWAPPINESS"
+        elif [ "$VALUE" = "reset" ];
+            then
+                if [ "$SWAPPINESS_BACKUP" ];
+                    then
+                        cprint "swappiness has been set to the old value"
+                        setKernelTune "$SWAPPINESS_SYSPATH" "$SWAPPINESS_BACKUP"
+
+                        # Delete Backup and the property itself
+                        deleteProp "BACKUP-SWAP"
+                        deleteProp "SWAPPINESS"
+                    else
+                        abort "no backup was set yet, swappiness is unmodified"
+                fi
             return
         fi
-        if [ "$VALUE" -ge 1 ] && [ "$VALUE" -le 200 ];
+
+        if [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
+            then abort "VALUE parameter must be a number (0-200)"
+
+        elif [ "$VALUE" -ge 1 ] && [ "$VALUE" -le 200 ];
             then
                 if [ "$VALUE" -gt 100 ];
-                    then cprint "WARNING: +100 swappiness is only compatible with Linux 5.7 and later"
-                         cprint "WARNING: and might cause excessive battery drain and storage wear"
+                    then 
+                        cprint "WARNING: +100 swappiness is only compatible with Linux 5.7 and later"
+                        cprint "WARNING: and might cause excessive battery drain and storage wear"
                 fi
 
                 # Backup first, so the value can be reset without needing a reboot
                 modifyProp "BACKUP-SWAP" "$(cat "$SWAPPINESS_SYSPATH")"
 
                 cprint "swappiness has been set to $VALUE"
-                    setKernelTune "$SWAPPINESS_SYSPATH" "$VALUE"
-                    modifyProp "SWAPPINESS" "$VALUE"
+                setKernelTune "$SWAPPINESS_SYSPATH" "$VALUE"
+                modifyProp "SWAPPINESS" "$VALUE"
             else
-                abort "VALUE is not in range (1-200)"
+                abort "VALUE is missing, or not in range (1-200)"
         fi
     ;;
     "vfs-cache-pressure")
@@ -193,32 +205,41 @@ case $NAME in
         if [ "$VALUE" = "show" ];
             then
                 if [ "$VFS_CACHE_PRESSURE_BACKUP" ];
-                    then cprint "original/default VM swappiness: $VFS_CACHE_PRESSURE_BACKUP"
+                    then cprint "original/default VFS cache pressure: $VFS_CACHE_PRESSURE_BACKUP"
                 fi
 
-                cprint "current virtual memory swappiness: $CURRENT_VFS_CACHE_PRESSURE"
+                cprint "current VFS cache pressure: $CURRENT_VFS_CACHE_PRESSURE"
             return
-        fi
-        if [ "$VALUE" = "reset" ];
-            then
-                cprint "VFS Cache Pressure has been reset to the old value"
-                    setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VFS_CACHE_PRESSURE_BACKUP"
 
-                # Delete Backup and the property itself
-                deleteProp "BACKUP-VFS"
-                deleteProp "VFS-CACHE-PRESSURE"
+        elif [ "$VALUE" = "reset" ];
+            then
+                if [ "$VFS_CACHE_PRESSURE_BACKUP" ];
+                    then
+                        cprint "VFS cache pressure has been reset to the old value"
+                        setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VFS_CACHE_PRESSURE_BACKUP"
+
+                        # Delete Backup and the property itself
+                        deleteProp "BACKUP-VFS"
+                        deleteProp "VFS-CACHE-PRESSURE"
+                    else
+                        abort "no backup was set yet, VFS cache pressure is unmodified"
+                fi
             return
         fi
-        if [ "$VALUE" -ge 1 ];
+
+        if [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
+            then abort "VALUE parameter must be a number (1-∞)"
+
+        elif [ "$VALUE" -ge 1 ];
             then
-                 # Backup first, so the value can be reset without needing a reboot
+                # Backup first, so the value can be reset without needing a reboot
                 modifyProp "BACKUP-VFS" "$(cat "$VFS_CACHE_PRESSURE_SYSPATH")"
 
-                cprint "VFS Cache Pressure has been set to $VALUE"
-                    setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VALUE"
-                    modifyProp "VFS-CACHE-PRESSURE" "$VALUE"
+                cprint "VFS cache pressure has been set to $VALUE"
+                setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VALUE"
+                modifyProp "VFS-CACHE-PRESSURE" "$VALUE"
             else
-                abort "VALUE is not in range (1-∞)"
+                abort "VALUE is missing, or not in range (1-∞)"
         fi
     ;;
     *)
