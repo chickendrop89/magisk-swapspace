@@ -21,7 +21,7 @@ SWAPPINESS_SYSPATH="/proc/sys/vm/swappiness"
 VFS_CACHE_PRESSURE_SYSPATH="/proc/sys/vm/vfs_cache_pressure"
 
 cprint(){
-    printf "- %s ...\n" "$1"
+    printf "- magisk-swapspace: %s \n" "$1"
 }
 
 # Modify module properties

@@ -45,7 +45,7 @@ createSwapSpace(){
             unset PRIORITY
             modifyProp SWAP-PRIORITY false
         else
-            cprint "(magisk-swapspaace) will have ($PRIORITY) priority"
+            cprint "swap will have ($PRIORITY) priority"
             modifyProp SWAP-PRIORITY "$PRIORITY"
             PRIORITY="-p $PRIORITY"
     fi
@@ -54,33 +54,33 @@ createSwapSpace(){
         then
             COUNT_KB="$(expr "$COUNT" \* 1000000)";
 
-            cprint "Swapoff and delete existing swapfile"
+            cprint "swap-off and delete existing swapfile"
                 swapoff "$SWAPFILE"
-                rm -rf "$SWAPFILE" || abort "Cannot remove swapfile!"
+                rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
 
-            cprint "Create $COUNT GB swapfile"
+            cprint "create $COUNT GB swapfile"
                 dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$COUNT_KB" 1>/dev/null
 
-            cprint "Setting-up swapfile"
+            cprint "setting-up swapfile"
                 mkswap "$SWAPFILE" 1>/dev/null
                 chown root:root "$SWAPFILE"
         else
             if [ $(readProp "ENABLE-SWAP") = true ];
                 then
-                    abort "magisk-swapspace is already enabled"
+                    abort "already enabled"
             fi 
             if ! [ -f $SWAPFILE ];
                 then
-                    abort "There is no existing swapfile"
+                    abort "no existing swapfile"
             fi
     fi
 
     # Use the toybox version of the "swapon" applet as it has the priority switch
-    cprint "Loading swapfile (It will take a while)"
+    cprint "loading swapfile (It will take a while)"
         toybox swapon $PRIORITY $SWAPFILE
 
     modifyProp ENABLE-SWAP true
-    cprint "(magisk-swapspace) has been enabled"
+    cprint "(mss) has been enabled"
 
     # Exit the script and stop execution of later code
     exit 0
@@ -90,7 +90,7 @@ case $NAME in
     "add")
         if [ -n "$OPTIONALVALUE" ] && [ ! "$OPTIONALVALUE" -ge 0 ] || [ ! "$OPTIONALVALUE" -le 32767 ];
             then
-                abort "Number (Priority) is not in range (0-32767)"
+                abort "(priority) is not in range (0-32767)"
         fi
         if [ "$VALUE" = "keep" ];
             then
@@ -106,42 +106,42 @@ case $NAME in
     "remove")
         if [ "$VALUE" = "keep" ];
             then
-                cprint "Swapoff but keep the swapfile"
+                cprint "swap-off, but keep the swapfile"
                     swapoff "$SWAPFILE"
             else
-                cprint "Swapoff and delete existing swapfile"
+                cprint "swap-off, and remove swapfile"
                     swapoff "$SWAPFILE"
-                    rm -rf "$SWAPFILE" || abort "Cannot remove swapfile!"
+                    rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
         fi
 
         modifyProp ENABLE-SWAP false
         modifyProp SWAP-PRIORITY false
-        cprint "(magisk-swapspace) has been disabled"
+        cprint "(mss) has been disabled"
     ;;
     "status")
         if [ "$(readProp ENABLE-SWAP 2>/dev/null)" = "true" ];
             then 
-                cprint "(magisk-swapspace) is enabled with with $(du -sh "$SWAPFILE" | awk '{ print $1 }')" 2>/dev/null
+                cprint "(mss) is enabled with with $(du -sh "$SWAPFILE" | awk '{ print $1 }')" 2>/dev/null
                 printf "\n%s\n" "$(cat /proc/swaps || return)"
             else 
-                cprint "(magisk-swapspace) is not configured/disabled"
+                cprint "(mss) is not configured/disabled"
         fi
     ;;
     "swapon")
         if toybox swapon "$SWAPFILE";
-            then cprint "Successfully performed a swap-on operation";
-            else cprint "Couldn't swap-on, maybe it's already mounted?";
+            then cprint "successfully performed a swap-on operation";
+            else cprint "couldn't swap-on, maybe it's already mounted?";
         fi
 
-        cprint "(Hint): Temporarily swap-off using (\"magiskswap swapoff\")"
+        cprint "(hint): temporarily swap-off using (\"magiskswap swapoff\")"
     ;;
     "swapoff")        
         if toybox swapoff "$SWAPFILE";
-            then cprint "Successfully performed a temporary swap-off operation";
-            else cprint "Couldn't swap-off, maybe it's already dismounted?";
+            then cprint "successfully performed a temporary swap-off operation";
+            else cprint "couldn't swap-off, maybe it's already dismounted?";
         fi
 
-        cprint "(Hint): Swap-on using (\"magiskswap swapon\")"
+        cprint "(Hint): swap-on using (\"magiskswap swapon\")"
     ;;
     "swappiness")
         SWAPPINESS_BACKUP="$(readProp "BACKUP-SWAP")"
@@ -150,15 +150,15 @@ case $NAME in
         if [ "$VALUE" = "show" ];
             then
                 if [ "$SWAPPINESS_BACKUP" ];
-                    then cprint "Original/Default VM swappiness: $SWAPPINESS_BACKUP"
+                    then cprint "original/default VM swappiness: $SWAPPINESS_BACKUP"
                 fi
 
-                cprint "Current VM swappiness: $CURRENT_SWAPPINESS"
+                cprint "current VM swappiness: $CURRENT_SWAPPINESS"
             return
         fi
         if [ "$VALUE" = "reset" ];
             then
-                cprint "Swappiness has been set to the old value"
+                cprint "swappiness has been set to the old value"
                     setKernelTune "$SWAPPINESS_SYSPATH" "$SWAPPINESS_BACKUP"
 
                 # Delete Backup and the property itself
@@ -169,18 +169,18 @@ case $NAME in
         if [ "$VALUE" -ge 1 ] && [ "$VALUE" -le 200 ];
             then
                 if [ "$VALUE" -gt 100 ];
-                    then cprint "Warning: +100 swappiness is only compatible with Linux 5.7 and later"
-                         cprint "Warning: and might cause excessive battery drain and storage wear"
+                    then cprint "WARNING: +100 swappiness is only compatible with Linux 5.7 and later"
+                         cprint "WARNING: and might cause excessive battery drain and storage wear"
                 fi
 
                 # Backup first, so the value can be reset without needing a reboot
                 modifyProp "BACKUP-SWAP" "$(cat "$SWAPPINESS_SYSPATH")"
 
-                cprint "Swappiness has been set to $VALUE"
+                cprint "swappiness has been set to $VALUE"
                     setKernelTune "$SWAPPINESS_SYSPATH" "$VALUE"
                     modifyProp "SWAPPINESS" "$VALUE"
             else
-                abort "Number is not in range (1-200)"
+                abort "VALUE is not in range (1-200)"
         fi
     ;;
     "vfs-cache-pressure")
@@ -190,10 +190,10 @@ case $NAME in
         if [ "$VALUE" = "show" ];
             then
                 if [ "$VFS_CACHE_PRESSURE_BACKUP" ];
-                    then cprint "Original/Default VM swappiness: $VFS_CACHE_PRESSURE_BACKUP"
+                    then cprint "original/default VM swappiness: $VFS_CACHE_PRESSURE_BACKUP"
                 fi
 
-                cprint "Current virtual memory swappiness: $CURRENT_VFS_CACHE_PRESSURE"
+                cprint "current virtual memory swappiness: $CURRENT_VFS_CACHE_PRESSURE"
             return
         fi
         if [ "$VALUE" = "reset" ];
@@ -215,7 +215,7 @@ case $NAME in
                     setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VALUE"
                     modifyProp "VFS-CACHE-PRESSURE" "$VALUE"
             else
-                abort "Number is not in range (1-∞)"
+                abort "VALUE is not in range (1-∞)"
         fi
     ;;
     *)
