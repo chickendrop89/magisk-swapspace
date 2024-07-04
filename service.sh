@@ -38,11 +38,6 @@ if [ "$SWAPPINESS_PROP" ];
   then setKernelTune "$SWAPPINESS_SYSPATH" "$SWAPPINESS_PROP"
 fi
 
-# If swappiness was not configured, and is currently set below 80. set to 80
-if ! [ "$SWAPPINESS_PROP" ] && ! [ "$(cat "$SWAPPINESS_SYSPATH")" -ge 80 ];
-  then setKernelTune "$SWAPPINESS_SYSPATH" 80
-fi
-
 # If swapspace was configured, swap-on boot
 if [ "$ENABLE_SWAP_PROP" = true ]; 
   then
