@@ -1,7 +1,7 @@
 id=magisk-swapspace
 name=Magisk SwapSpace
-version=v1.2
-versionCode=12
+version=v1.3
+versionCode=13
 author=chickendrop89
 description=Save memory a bit by swapping some to a disk (magiskswap in terminal)
 updateJson=https://raw.githubusercontent.com/chickendrop89/magisk-swapspace/master/update.json
