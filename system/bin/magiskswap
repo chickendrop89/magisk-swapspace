@@ -183,7 +183,7 @@ case $COMMAND in
         if [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
             then abort "VALUE parameter must be a number (0-200)"
 
-        elif [ "$VALUE" -ge 1 ] && [ "$VALUE" -le 200 ];
+        elif [ "$VALUE" -ge 0 ] && [ "$VALUE" -le 200 ];
             then
                 if [ "$VALUE" -gt 100 ];
                     then 
@@ -198,7 +198,7 @@ case $COMMAND in
                 setKernelTune "$SWAPPINESS_SYSPATH" "$VALUE"
                 modifyProp "SWAPPINESS" "$VALUE"
             else
-                abort "VALUE is missing, or not in range (1-200)"
+                abort "VALUE is missing, or not in range (0-200)"
         fi
     ;;
     "vfs-cache-pressure")
