@@ -15,7 +15,7 @@
 
 # Copyright (C) 2024  chickendrop89
 
-NAME="$1";
+COMMAND="$1";
 VALUE=$2;
 OPTIONALVALUE="$3";
 
@@ -30,7 +30,7 @@ abort(){
 
 # Create swapfile and swaps-on
 createSwapSpace(){
-    COUNT="$1";
+    SIZE="$1";
     PRIORITY="$2";
 
     # If priority parameter is specified, use it when swapping-on
@@ -55,7 +55,7 @@ createSwapSpace(){
             fi
         else
             # 1 Gigabyte = 1,048,576 Kilobytes
-            COUNT_KB="$((COUNT * 1048576))";
+            SIZE_KB="$((SIZE * 1048576))";
 
             if [ -f "$SWAPFILE" ];
                 then
@@ -64,8 +64,8 @@ createSwapSpace(){
                     rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
             fi
 
-            cprint "creating $COUNT GB swapfile"
-            dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$COUNT_KB" 1>/dev/null
+            cprint "creating $SIZE GB swapfile"
+            dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$SIZE_KB" 1>/dev/null
 
             cprint "preparing swapfile"
             mkswap "$SWAPFILE" 1>/dev/null
@@ -80,8 +80,8 @@ createSwapSpace(){
     cprint "(mss) has been enabled"
 }
 
-case $NAME in
-    "add")
+case $COMMAND in
+    "create")
         # OPTIONALVALUE parameters
         if [ -n "$OPTIONALVALUE" ] && ! echo "$OPTIONALVALUE" | grep -q -E '^[0-9]+$';
             then abort "PRIORITY parameter must be a number (0-32767)"
@@ -248,14 +248,16 @@ case $NAME in
     *)
         cat << EOT
 
-magisk-swapspace by chickendrop89
-usage: magiskswap <NAME> <VALUE> [OPTIONAL]
+magisk-swapspace by chickendrop89 ⓒ GPLv3 license
+usage: magiskswap <COMMAND> <VALUE> [OPTIONAL]
 
-add <size in GB> [priority] [preserve]
+create <size: GB> [priority] [preserve]
   - Creates swapfile and swaps-on
+    (?) [preserve] option enables the previously disabled swapfile
 
 remove [preserve]
   - Permanently swaps-off and deletes swapfile
+    (?) [preserve] option only disables it
 
 status [swapon] [swapoff]
   - Prints swapfile size and status
@@ -266,10 +268,7 @@ swappiness <1-200> [show] [reset]
 vfs-cache-pressure <1-∞> [show] [reset] 
   - Controls the tendency of the kernel to reclaim the memory
 
-Notes:
-- [remove preserve, add preserve]: 
- Instead of removing, stop mounting on boot and preserve the file
- Later, use "magiskswap add preserve" to use the preserved swapfile
+(?) These commands are presistent across reboots (?)
 
 EOT
     ;;
