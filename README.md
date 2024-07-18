@@ -10,10 +10,10 @@ Download the module archive, and flash it in Magisk app, or using command line
 magisk-swapspace by chickendrop89
 usage: magiskswap <NAME> <VALUE> [OPTIONAL]
 
-add <size in GB> [priority] [keep]
+add <size in GB> [priority] [preserve]
   - Creates swapfile and swaps-on
 
-remove [keep]   
+remove [preserve]
   - Permanently swaps-off and deletes swapfile
 
 status [swapon] [swapoff]
@@ -26,9 +26,9 @@ vfs-cache-pressure <1-∞> [show] [reset]
   - Controls the tendency of the kernel to reclaim the memory
 
 Notes:
-- [remove keep, add keep]: 
- Instead of deleting, swap-off permanently but keep the file,
- Later, use "magiskswap add keep" to use the old swapfile         
+- [remove preserve, add preserve]: 
+ Instead of removing, stop mounting on boot and preserve the file
+ Later, use "magiskswap add preserve" to use the preserved swapfile 
 ```
 
 ## Notice:

@@ -45,7 +45,7 @@ createSwapSpace(){
     fi
 
     # If the swapfile was preserved, and doesn't need to be recreated
-    if [ "$VALUE" = "keep" ];
+    if [ "$VALUE" = "preserve" ];
         then
             if ! [ -f "$SWAPFILE" ];
                 then abort "no existing swapfile"
@@ -61,10 +61,10 @@ createSwapSpace(){
             swapoff "$SWAPFILE"
             rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
 
-            cprint "create $COUNT GB swapfile"
+            cprint "creating $COUNT GB swapfile"
             dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$COUNT_KB" 1>/dev/null
 
-            cprint "setting-up swapfile"
+            cprint "preparing swapfile"
             mkswap "$SWAPFILE" 1>/dev/null
             chown root:root "$SWAPFILE"
     fi
@@ -88,8 +88,8 @@ case $NAME in
         fi
 
         # VALUE parameters
-        if [ "$VALUE" = "keep" ];
-            then createSwapSpace "keep" "$OPTIONALVALUE" 2>/dev/null
+        if [ "$VALUE" = "preserve" ];
+            then createSwapSpace "preserve" "$OPTIONALVALUE" 2>/dev/null
 
         elif [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
             then abort "VALUE parameter must be a number (0-100)"
@@ -100,9 +100,9 @@ case $NAME in
         fi
     ;; 
     "remove")
-        if [ "$VALUE" = "keep" ];
+        if [ "$VALUE" = "preserve" ];
             then
-                cprint "swap-off, but keep the swapfile"
+                cprint "swap-off, but preserve the swapfile"
                 swapoff "$SWAPFILE"
             else
                 cprint "swap-off, and remove swapfile"
@@ -248,10 +248,10 @@ case $NAME in
 magisk-swapspace by chickendrop89
 usage: magiskswap <NAME> <VALUE> [OPTIONAL]
 
-add <size in GB> [priority] [keep]
+add <size in GB> [priority] [preserve]
   - Creates swapfile and swaps-on
 
-remove [keep]   
+remove [preserve]
   - Permanently swaps-off and deletes swapfile
 
 status [swapon] [swapoff]
@@ -264,9 +264,9 @@ vfs-cache-pressure <1-∞> [show] [reset]
   - Controls the tendency of the kernel to reclaim the memory
 
 Notes:
-- [remove keep, add keep]: 
- Instead of deleting, swap-off permanently but keep the file,
- Later, use "magiskswap add keep" to use the old swapfile
+- [remove preserve, add preserve]: 
+ Instead of removing, stop mounting on boot and preserve the file
+ Later, use "magiskswap add preserve" to use the preserved swapfile
 
 EOT
     ;;
