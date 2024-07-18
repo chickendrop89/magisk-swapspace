@@ -95,11 +95,11 @@ case $COMMAND in
             then createSwapSpace "preserve" "$OPTIONALVALUE" 2>/dev/null
 
         elif [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
-            then abort "VALUE parameter must be a number (0-100)"
+            then abort "VALUE parameter must be a number (1-100)"
 
         elif [ -n "$VALUE" ] && [ "$VALUE" -ge 1 ] && [ "$VALUE" -le 100 ];
             then createSwapSpace "$VALUE" "$OPTIONALVALUE" 2>/dev/null
-            else abort "VALUE parameter is missing, or not in range (0-100)"
+            else abort "VALUE parameter is missing, or not in range (1-100)"
         fi
     ;; 
     "remove")
