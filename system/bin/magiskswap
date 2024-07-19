@@ -28,6 +28,21 @@ abort(){
     exit 1
 }
 
+# Function to check available space in gigabytes
+checkFreeSpace() {
+  REQUIRED_SPACE="$1"
+
+  # The DiskFree binary on android is very neutered, and is missing some flags such as --ouput=avail
+  # Use awk to strip the "Available" and "G" from the string, and then finally round the number
+  AVAILABLE_SPACE=$(df -h "$MODPATH" | awk 'NR==2 {gsub(/Available\n/,""); sub(/G$/,""); print int($4)}')
+
+  # Check if required space is less than or equal to available space
+  if ! [[ $REQUIRED_SPACE -le $AVAILABLE_SPACE ]]; 
+    then
+        abort "insufficient space ($AVAILABLE_SPACE GB available)"
+  fi
+}
+
 # Create swapfile and swaps-on
 createSwapSpace(){
     SIZE="$1";
@@ -63,6 +78,8 @@ createSwapSpace(){
                     swapoff "$SWAPFILE"
                     rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
             fi
+
+            checkFreeSpace "$SIZE"
 
             cprint "creating $SIZE GB swapfile"
             dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$SIZE_KB" 1>/dev/null
