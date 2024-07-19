@@ -30,12 +30,12 @@ ENABLE_SWAP_PROP="$(readProp ENABLE-SWAP)"
 
 # Sets the VFS Cache Pressure value if configured
 if [ "$VFS_CACHE_PRESSURE_PROP" ];
-  then setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VFS_CACHE_PRESSURE_PROP"
+  then setKernelTune "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY" "$VFS_CACHE_PRESSURE_PROP"
 fi
 
 # Sets the Swappiness value if configured
 if [ "$SWAPPINESS_PROP" ];
-  then setKernelTune "$SWAPPINESS_SYSPATH" "$SWAPPINESS_PROP"
+  then setKernelTune "$SWAPPINESS_SYSCTL_ENTRY" "$SWAPPINESS_PROP"
 fi
 
 # If swapspace was configured, swap-on boot

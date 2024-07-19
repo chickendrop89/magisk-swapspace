@@ -17,8 +17,8 @@ MODPATH="/data/adb/modules/magisk-swapspace"
 SWAPPROP="$MODPATH/swap.prop"
 SWAPFILE="$MODPATH/swap"
 
-SWAPPINESS_SYSPATH="/proc/sys/vm/swappiness"
-VFS_CACHE_PRESSURE_SYSPATH="/proc/sys/vm/vfs_cache_pressure"
+VFS_CACHE_PRESSURE_SYSCTL_ENTRY="vm.vfs_cache_pressure"
+SWAPPINESS_SYSCTL_ENTRY="vm.swappiness"
 
 cprint(){
     printf "- magisk-swapspace: %s \n" "$1"
@@ -70,8 +70,8 @@ readProp() {
 
 # Set kernel tune - it's as simple as that
 setKernelTune() {
-    FILE="$1"
+    KEY="$1"
     VALUE="$2"
 
-    echo "$VALUE" > "$FILE"
+    sysctl -w -q "$KEY=$VALUE"
 }

@@ -170,7 +170,7 @@ case $COMMAND in
     ;;
     "swappiness")
         SWAPPINESS_BACKUP="$(readProp BACKUP-SWAP)"
-        CURRENT_SWAPPINESS="$(cat "$SWAPPINESS_SYSPATH")"
+        CURRENT_SWAPPINESS="$(sysctl -n "$SWAPPINESS_SYSCTL_ENTRY")"
 
         if [ "$VALUE" = "show" ];
             then
@@ -186,7 +186,7 @@ case $COMMAND in
                 if [ "$SWAPPINESS_BACKUP" ];
                     then
                         cprint "swappiness has been set to the old value"
-                        setKernelTune "$SWAPPINESS_SYSPATH" "$SWAPPINESS_BACKUP"
+                        setKernelTune "$SWAPPINESS_SYSCTL_ENTRY" "$SWAPPINESS_BACKUP"
 
                         # Delete Backup and the property itself
                         deleteProp "BACKUP-SWAP"
@@ -214,10 +214,10 @@ case $COMMAND in
                 fi
 
                 # Backup first, so the value can be reset without needing a reboot
-                modifyProp "BACKUP-SWAP" "$(cat "$SWAPPINESS_SYSPATH")"
+                modifyProp "BACKUP-SWAP" "$(sysctl -n "$SWAPPINESS_SYSCTL_ENTRY")"
 
                 cprint "swappiness has been set to $VALUE"
-                setKernelTune "$SWAPPINESS_SYSPATH" "$VALUE"
+                setKernelTune "$SWAPPINESS_SYSCTL_ENTRY" "$VALUE"
                 modifyProp "SWAPPINESS" "$VALUE"
             else
                 abort "VALUE is missing, or not in range (0-200)"
@@ -225,7 +225,7 @@ case $COMMAND in
     ;;
     "vfs-cache-pressure")
         VFS_CACHE_PRESSURE_BACKUP="$(readProp "BACKUP-VFS")"
-        CURRENT_VFS_CACHE_PRESSURE="$(cat "$VFS_CACHE_PRESSURE_SYSPATH")"
+        CURRENT_VFS_CACHE_PRESSURE="$(sysctl -n "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY")"
 
         if [ "$VALUE" = "show" ];
             then
@@ -241,7 +241,7 @@ case $COMMAND in
                 if [ "$VFS_CACHE_PRESSURE_BACKUP" ];
                     then
                         cprint "VFS cache pressure has been reset to the old value"
-                        setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VFS_CACHE_PRESSURE_BACKUP"
+                        setKernelTune "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY" "$VFS_CACHE_PRESSURE_BACKUP"
 
                         # Delete Backup and the property itself
                         deleteProp "BACKUP-VFS"
@@ -258,10 +258,10 @@ case $COMMAND in
         elif [ "$VALUE" -ge 1 ];
             then
                 # Backup first, so the value can be reset without needing a reboot
-                modifyProp "BACKUP-VFS" "$(cat "$VFS_CACHE_PRESSURE_SYSPATH")"
+                modifyProp "BACKUP-VFS" "$(sysctl -n "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY")"
 
                 cprint "VFS cache pressure has been set to $VALUE"
-                setKernelTune "$VFS_CACHE_PRESSURE_SYSPATH" "$VALUE"
+                setKernelTune "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY" "$VALUE"
                 modifyProp "VFS-CACHE-PRESSURE" "$VALUE"
             else
                 abort "VALUE is missing, or not in range (1-∞)"
