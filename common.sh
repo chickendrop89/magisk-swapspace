@@ -13,12 +13,12 @@
 
 # Copyright (C) 2024  chickendrop89
 
-MODPATH="/data/adb/modules/magisk-swapspace"
-SWAPPROP="$MODPATH/swap.prop"
-SWAPFILE="$MODPATH/swap"
+export MODPATH="/data/adb/modules/magisk-swapspace"
+export SWAPPROP="$MODPATH/swap.prop"
+export SWAPFILE="$MODPATH/swap"
 
-VFS_CACHE_PRESSURE_SYSCTL_ENTRY="vm.vfs_cache_pressure"
-SWAPPINESS_SYSCTL_ENTRY="vm.swappiness"
+export VFS_CACHE_PRESSURE_SYSCTL_ENTRY="vm.vfs_cache_pressure"
+export SWAPPINESS_SYSCTL_ENTRY="vm.swappiness"
 
 cprint(){
     printf "- magisk-swapspace: %s \n" "$1"

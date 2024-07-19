@@ -91,6 +91,8 @@ createSwapSpace(){
 
     # Use the toybox version of the "swapon" applet as it has the priority switch
     cprint "mounting swapfile (It will take a while)"
+
+        # shellcheck disable=SC2086
         toybox swapon $PRIORITY $SWAPFILE
 
     modifyProp ENABLE-SWAP true

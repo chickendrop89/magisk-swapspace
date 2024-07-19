@@ -51,5 +51,6 @@ if [ "$ENABLE_SWAP_PROP" = true ];
             PRIORITY="-p $PRIORITY"
     fi
 
+    # shellcheck disable=SC2086
     toybox swapon $PRIORITY $SWAPFILE
 fi
