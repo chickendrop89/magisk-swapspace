@@ -18,7 +18,7 @@
 # Wait until system boot is *really* completed
 while [ "$(getprop sys.boot_completed)" != "1" ]; 
   do
-    sleep 1
+    sleep 5
 done
 
 # Import common functions from file
