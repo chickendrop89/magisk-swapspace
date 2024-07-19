@@ -65,7 +65,7 @@ readProp() {
     REGEX="s/^$1=//p"
     FILE="$SWAPPROP"
 
-    cat "$FILE" 2>/dev/null | dos2unix | sed -n "$REGEX" | head -n 1
+    cat "$FILE" 2>/dev/null | sed -n "$REGEX" | head -n 1
 }
 
 # Set kernel tune - it's as simple as that
