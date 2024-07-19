@@ -3,7 +3,9 @@
 This module saves memory a bit by swapping some to a disk
 
 ## Installation:
-Download the module archive, and flash it in Magisk app, or using command line
+* [Download the module archive here](https://github.com/chickendrop89/magisk-swapspace/releases/latest/download/magiskswapspace.zip)
+* Flash it in magisk app, or using command line
+* Run `magiskswap` in your preferred terminal app (as a root user)
 
 ## Usage:
 ```
@@ -37,7 +39,7 @@ Before tinkering with `swappiness` and `vfs-cache-pressure`, you should understa
 
 - [Linux documentation on virtual memory subsystem](https://docs.kernel.org/admin-guide/sysctl/vm.html)
 
-Using `swap` on older eMMC/UFS chips is **not recomended** and could result in highly reduced lifespan ⚠️
+Using on-disk `swap` on older eMMC or UFS chips is **not recomended** and could result in highly reduced lifespan ⚠️ Lower the swappiness to make the it less agressive!
 
 ## Requirements
 - Magisk 20.4+ 
