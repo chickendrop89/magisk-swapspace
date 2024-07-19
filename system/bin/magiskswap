@@ -185,6 +185,11 @@ case $COMMAND in
 
         elif [ "$VALUE" -ge 0 ] && [ "$VALUE" -le 200 ];
             then
+                if [ "$VALUE" -eq 0 ];
+                    then
+                        cprint "WARNING: Setting swappiness to 0 stops swapping to disk completely"
+                        cprint "WARNING: Use this with caution, as OOM situations might occur"
+                fi
                 if [ "$VALUE" -gt 100 ];
                     then 
                         cprint "WARNING: +100 swappiness is only compatible with Linux 5.7 and later"
