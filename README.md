@@ -23,7 +23,7 @@ remove [preserve]
 status [swapon] [swapoff]
   - Prints swapfile size and status
 
-swappiness <1-200> [show] [reset]
+swappiness <0-200> [show] [reset]
   - Controls how agressively Linux swaps anonymous memory
 
 vfs-cache-pressure <1-∞> [show] [reset] 
