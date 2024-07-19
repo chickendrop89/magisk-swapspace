@@ -1,6 +1,6 @@
 {
-    "version": "v1.3",
-    "versionCode": 13,
+    "version": "v2.0",
+    "versionCode": 20,
     "zipUrl": "https://github.com/chickendrop89/magisk-swapspace/releases/latest/download/magiskswapspace.zip",
     "changelog": "https://raw.githubusercontent.com/chickendrop89/magisk-swapspace/master/CHANGELOG.md"
 }

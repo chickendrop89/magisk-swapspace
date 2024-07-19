@@ -1,3 +1,12 @@
+## 2.0
+- Reword the `add` command to `crerate`
+- Reword the `keep` option to `preserve`
+- Allow setting `swappiness` to `0` for some reason (not recommended)
+- Fix wrong command ranges with `create`
+- Make the usage block more understandable
+- Add a free space check
+- Optimize the code
+
 ## 1.3
 - Upstream the MMT-EX template to 3.7
 - Stop the module from unnecessarily modifying `swappiness`
