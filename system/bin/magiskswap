@@ -37,7 +37,7 @@ checkFreeSpace() {
   AVAILABLE_SPACE=$(df -h "$MODPATH" | awk 'NR==2 {gsub(/Available\n/,""); sub(/G$/,""); print int($4)}')
 
   # Check if required space is less than or equal to available space
-  if ! [[ $REQUIRED_SPACE -le $AVAILABLE_SPACE ]]; 
+  if [ "$REQUIRED_SPACE" -gt "$AVAILABLE_SPACE" ]; 
     then
         abort "insufficient space ($AVAILABLE_SPACE GB available)"
   fi
