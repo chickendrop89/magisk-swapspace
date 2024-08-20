@@ -72,6 +72,9 @@ createSwapSpace(){
             # 1 Gigabyte = 1,048,576 Kilobytes
             SIZE_KB="$((SIZE * 1048576))";
 
+            cprint "creating $SIZE GB swapfile"
+            checkFreeSpace "$SIZE"
+
             if [ -f "$SWAPFILE" ];
                 then
                     cprint "swap-off and delete existing swapfile"
@@ -79,9 +82,6 @@ createSwapSpace(){
                     rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
             fi
 
-            checkFreeSpace "$SIZE"
-
-            cprint "creating $SIZE GB swapfile"
             dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$SIZE_KB" 1>/dev/null
 
             cprint "preparing swapfile"
