@@ -1,5 +1,10 @@
+## 2.1
+- Fix some unexpected behaviour with the free space check
+- Refactor some code to be POSIX compliant
+- Fix wrong command ranges with `swappiness`
+
 ## 2.0
-- Reword the `add` command to `crerate`
+- Reword the `add` command to `create`
 - Reword the `keep` option to `preserve`
 - Allow setting `swappiness` to `0` for some reason (not recommended)
 - Fix wrong command ranges with `create`
