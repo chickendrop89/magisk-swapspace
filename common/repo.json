@@ -1,0 +1,10 @@
+{
+    "support": "https://github.com/Magisk-Modules-Alt-Repo/magisk-swapspace/issues",
+    "license": "GPL-3.0",
+    "categories": [
+        "Configurable",
+        "Tweaks and Hacks",
+        "System"
+    ],
+    "readme": "https://raw.githubusercontent.com/Magisk-Modules-Alt-Repo/magisk-swapspace/master/README.md"
+}
