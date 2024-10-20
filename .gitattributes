@@ -1,5 +1,6 @@
-# Declare files that will always have LF line endings on checkout.
-*.sh text eol=lf
-*.prop text eol=lf
-META-INF/** text eol=lf
+* text=auto eol=lf
+
+*.sh diff=bash
+*.md diff=markdown
+
 system/bin/** text eol=lf
