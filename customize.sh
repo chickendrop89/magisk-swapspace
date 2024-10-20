@@ -44,7 +44,6 @@ REPLACE="
 
 set_permissions() {
   set_perm_recursive "$MODPATH" 0 0 0755 0700
-  set_perm_recursive "$MODPATH/system/bin/magiskswap" 0 0 0755 0700
 }
 
 ##########################################################################################
