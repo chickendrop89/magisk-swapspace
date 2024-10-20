@@ -15,11 +15,8 @@
 
 # Copyright (C) 2024  chickendrop89
 
-# Wait until system boot is *really* completed
-while [ "$(getprop sys.boot_completed)" != "1" ]; 
-  do
-    sleep 5
-done
+# Wait until system boot is completed
+resetprop -w sys.boot_completed 0
 
 # Import common functions from file
 . "/data/adb/modules/magisk-swapspace/common.sh"
