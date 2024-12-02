@@ -13,7 +13,6 @@
 
 # Copyright (C) 2024  chickendrop89
 
-export MODPATH="/data/adb/modules/magisk-swapspace"
 export SWAPPROP="$MODPATH/swap.prop"
 export SWAPFILE="$MODPATH/swap"
 

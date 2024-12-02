@@ -20,7 +20,7 @@ VALUE=$2;
 OPTIONALVALUE="$3";
 
 # Import common functions from file
-. "/data/adb/modules/magisk-swapspace/common.sh";
+. "$MODPATH/common.sh";
 
 # Abort - Print message and exit
 abort(){ 

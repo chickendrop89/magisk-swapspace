@@ -19,7 +19,7 @@
 resetprop -w sys.boot_completed 0
 
 # Import common functions from file
-. "/data/adb/modules/magisk-swapspace/common.sh"
+. "$MODPATH/common.sh"
 
 SWAPPINESS_PROP="$(readProp SWAPPINESS)"
 VFS_CACHE_PRESSURE_PROP="$(readProp VFS-CACHE-PRESSURE)"
