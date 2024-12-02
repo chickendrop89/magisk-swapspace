@@ -1,3 +1,10 @@
+## 2.2
+##### ⚠️ This version is deprecating older superuser managers (Magisk: 26) (KSU: 0.9.5) ⚠️
+- Use better way of checking if boot completed
+- Sped up the installation a bit
+- Future-proof for newer magisk versions
+- Add support for MMRL repo.json
+
 ## 2.1
 - Fix some unexpected behaviour with the free space check
 - Refactor some code to be POSIX compliant
