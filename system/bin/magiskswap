@@ -210,11 +210,6 @@ case $COMMAND in
                         cprint "WARNING: Setting swappiness to 0 stops swapping to disk completely"
                         cprint "WARNING: Use this with caution, as OOM situations might occur"
                 fi
-                if [ "$VALUE" -gt 100 ];
-                    then 
-                        cprint "WARNING: +100 swappiness is only compatible with Linux 5.7 and later"
-                        cprint "WARNING: and might cause excessive battery drain and storage wear"
-                fi
 
                 # Backup first, so the value can be reset without needing a reboot
                 modifyProp "BACKUP-SWAP" "$(sysctl -n "$SWAPPINESS_SYSCTL_ENTRY")"
