@@ -1,5 +1,11 @@
+## 2.3
+- Remove vfs-cache-pressure as it's kinda unrelated to this module
+- Add proper permissions to the swapfile during creation
+- Change module description/usage
+- Simplify the code a bit
+
 ## 2.2
-##### ⚠️ This version is deprecating older superuser managers (Magisk: 26) (KSU: 0.9.5) ⚠️
+##### ⚠️ This version is deprecating older superuser managers (Magisk: 26) (KSU: 0.9.3) ⚠️
 - Use better way of checking if boot completed
 - Sped up the installation a bit
 - Future-proof for newer magisk versions
