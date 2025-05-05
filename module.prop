@@ -3,5 +3,5 @@ name=Magisk SwapSpace
 version=v2.2
 versionCode=22
 author=chickendrop89
-description=Save memory a bit by swapping some to a disk (magiskswap in terminal)
+description=Create a persistent swap space on android (magiskswap in terminal)
 updateJson=https://raw.githubusercontent.com/chickendrop89/magisk-swapspace/master/update.json

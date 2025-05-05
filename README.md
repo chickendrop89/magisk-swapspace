@@ -1,6 +1,6 @@
 # magisk-swapspace
 
-This module saves memory a bit by swapping some to a disk
+This module allows for creating a persistent swap space on android 
 
 ## Installation:
 * [Download the module archive here](https://github.com/chickendrop89/magisk-swapspace/releases/latest/download/magiskswapspace.zip)
