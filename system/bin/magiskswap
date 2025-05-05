@@ -87,6 +87,8 @@ createSwapSpace(){
 
             cprint "preparing swapfile"
             mkswap "$SWAPFILE" 1>/dev/null
+
+            chmod 600 "$SWAPFILE"
             chown root:root "$SWAPFILE"
     fi
 
