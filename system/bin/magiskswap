@@ -226,50 +226,6 @@ case $COMMAND in
                 abort "VALUE is missing, or not in range (0-200)"
         fi
     ;;
-    "vfs-cache-pressure")
-        VFS_CACHE_PRESSURE_BACKUP="$(readProp "BACKUP-VFS")"
-        CURRENT_VFS_CACHE_PRESSURE="$(sysctl -n "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY")"
-
-        if [ "$VALUE" = "show" ];
-            then
-                if [ "$VFS_CACHE_PRESSURE_BACKUP" ];
-                    then cprint "original/default VFS cache pressure: $VFS_CACHE_PRESSURE_BACKUP"
-                fi
-
-                cprint "current VFS cache pressure: $CURRENT_VFS_CACHE_PRESSURE"
-            return
-
-        elif [ "$VALUE" = "reset" ];
-            then
-                if [ "$VFS_CACHE_PRESSURE_BACKUP" ];
-                    then
-                        cprint "VFS cache pressure has been reset to the old value"
-                        setKernelTune "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY" "$VFS_CACHE_PRESSURE_BACKUP"
-
-                        # Delete Backup and the property itself
-                        deleteProp "BACKUP-VFS"
-                        deleteProp "VFS-CACHE-PRESSURE"
-                    else
-                        abort "no backup was set yet, VFS cache pressure is unmodified"
-                fi
-            return
-        fi
-
-        if [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
-            then abort "VALUE parameter must be a number (1-∞)"
-
-        elif [ "$VALUE" -ge 1 ];
-            then
-                # Backup first, so the value can be reset without needing a reboot
-                modifyProp "BACKUP-VFS" "$(sysctl -n "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY")"
-
-                cprint "VFS cache pressure has been set to $VALUE"
-                setKernelTune "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY" "$VALUE"
-                modifyProp "VFS-CACHE-PRESSURE" "$VALUE"
-            else
-                abort "VALUE is missing, or not in range (1-∞)"
-        fi
-    ;;
     *)
         cat << EOT
 
@@ -289,9 +245,6 @@ status [swapon] [swapoff]
 
 swappiness <0-200> [show] [reset]
   - Controls how agressively Linux swaps anonymous memory
-
-vfs-cache-pressure <1-∞> [show] [reset] 
-  - Controls the tendency of the kernel to reclaim the memory
 
 (?) These commands are presistent across reboots (?)
 

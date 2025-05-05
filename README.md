@@ -26,23 +26,12 @@ status [swapon] [swapoff]
 swappiness <0-200> [show] [reset]
   - Controls how agressively Linux swaps anonymous memory
 
-vfs-cache-pressure <1-∞> [show] [reset] 
-  - Controls the tendency of the kernel to reclaim the memory
-
-(?) These commands are presistent across reboots (?)
+() These commands are presistent across reboots ()
 ```
 
 ## ⚠️ Warning ⚠️
-- Using on-disk `swap` on eMMC/UFS flash chips is **not recomended** and could result in highly reduced lifespan.
-- This project could be used as the last resort on devices suffering from **extreme** memory pressure
-
-## Notice:
-Before tinkering with `swappiness` and `vfs-cache-pressure`, you should understand how do they work:
-
-- [openSUSE documentation on tuning memory management](https://doc.opensuse.org/documentation/leap/archive/15.1/tuning/html/book.sle.tuning/cha-tuning-memory.html#cha-tuning-memory-vm-reclaim)
-
-- [Linux documentation on virtual memory subsystem](https://docs.kernel.org/admin-guide/sysctl/vm.html)
+- Using on-disk `swap` on flash chips is **not recomended** and could result in highly reduced lifespan.
 
 ## Requirements
 - Magisk 27.O+ 
-- KernelSU v0.9.4+ 
+- KernelSU v0.9.4+

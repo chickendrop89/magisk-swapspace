@@ -17,7 +17,6 @@
 export SWAPPROP="$MODPATH/swap.prop"
 export SWAPFILE="$MODPATH/swap"
 
-export VFS_CACHE_PRESSURE_SYSCTL_ENTRY="vm.vfs_cache_pressure"
 export SWAPPINESS_SYSCTL_ENTRY="vm.swappiness"
 
 cprint(){

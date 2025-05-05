@@ -23,13 +23,7 @@ resetprop -w sys.boot_completed 0
 . "$MODPATH/common.sh"
 
 SWAPPINESS_PROP="$(readProp SWAPPINESS)"
-VFS_CACHE_PRESSURE_PROP="$(readProp VFS-CACHE-PRESSURE)"
 ENABLE_SWAP_PROP="$(readProp ENABLE-SWAP)"
-
-# Sets the VFS Cache Pressure value if configured
-if [ "$VFS_CACHE_PRESSURE_PROP" ];
-  then setKernelTune "$VFS_CACHE_PRESSURE_SYSCTL_ENTRY" "$VFS_CACHE_PRESSURE_PROP"
-fi
 
 # Sets the Swappiness value if configured
 if [ "$SWAPPINESS_PROP" ];
