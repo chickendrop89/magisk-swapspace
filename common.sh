@@ -28,19 +28,13 @@ modifyProp(){
     NAME="$1"
     VARPROP="$2"
     FILE="$SWAPPROP"
+    NEW_LINE="$NAME=$VARPROP"
 
     if [ "$NAME" ] && [ ! "$NAME" = "=" ]; 
         then
-            touch "$FILE" 2>/dev/null
-            echo "$NAME=$VARPROP" | while read -r prop;
-                do
-                    newprop="$(echo "$prop" | cut -d '=' -f1)"
-                    sed -i "/${newprop}/d" "$FILE"
-                    cat="$(cat "$FILE")"
-
-                    echo "$prop" > "$FILE"
-                    echo "$cat" >>"$FILE"
-            done 2>/dev/null
+            touch "$FILE" 2>/dev/null 
+            sed -i "/^${NAME}=/d" "$FILE" 2>/dev/null
+            printf '%s\n' "$NEW_LINE" >> "$FILE" 2>/dev/null
     fi
 }
 
@@ -49,20 +43,17 @@ deleteProp(){
     NAME="$1"
     FILE="$SWAPPROP"
 
-    noneprop="$NAME="
-    nonepropn="$noneprop\n"
-
     if [ "$NAME" ] && [ ! "$NAME" = "=" ]; 
         then
-            sed -i "/${nonepropn}/d" "$FILE" 2>/dev/null
-            sed -i "/${noneprop}/d" "$FILE" 2>/dev/null
+            sed -i "/^${NAME}=/d" "$FILE" 2>/dev/null
     fi
 }
 
 # Read module properties
 readProp() {
-    REGEX="s/^$1=//p"
+    NAME="$1"
     FILE="$SWAPPROP"
+    REGEX="s/^$NAME=//p"
 
     cat "$FILE" 2>/dev/null | sed -n "$REGEX" | head -n 1
 }

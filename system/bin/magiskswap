@@ -17,7 +17,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 COMMAND="$1";
-VALUE=$2;
+VALUE="$2";
 OPTIONALVALUE="$3";
 
 # Import common functions from file
@@ -29,15 +29,44 @@ abort(){
     exit 1
 }
 
+# Check if a value is a valid positive integer.
+is_integer() {
+    [ -n "$1" ] && echo "$1" | grep -q -E '^[0-9]+$'
+}
+
+# Validate a numeric parameter is within a specified range.
+validate_range() {
+    PARAM_NAME="$1"
+    INPUT_VALUE="$2"
+    MIN="$3"
+    MAX="$4"
+    ERROR_MSG="$5"
+
+    if ! is_integer "$INPUT_VALUE"; 
+        then abort "$PARAM_NAME parameter must be a number ($MIN-$MAX)"
+    fi
+
+    if [ "$INPUT_VALUE" -lt "$MIN" ] || [ "$INPUT_VALUE" -gt "$MAX" ]; 
+        then abort "$ERROR_MSG ($MIN-$MAX)"
+    fi
+}
+
+# Validate swap size
+validate_swap_size() {
+    SIZE="$1"
+    MIN_SIZE=1
+    MAX_SIZE=1024 
+
+    validate_range "VALUE" "$SIZE" "$MIN_SIZE" "$MAX_SIZE" \
+        "VALUE parameter is missing, or not in range"
+}
+
 # Function to check available space in gigabytes
 checkFreeSpace() {
   REQUIRED_SPACE="$1"
+  AVAILABLE_SPACE=$(df -h /data | awk 'NR==2 { sub(/[^0-9.]+$/,"",$4); print int($4) }')
 
-  # The DiskFree binary on android is very neutered, and is missing some flags such as --ouput=avail
-  # Use awk to strip the "Available" and "G" from the string, and then finally round the number
-  AVAILABLE_SPACE=$(df -h "$MODPATH" | awk 'NR==2 {gsub(/Available\n/,""); sub(/G$/,""); print int($4)}')
-
-  # Check if required space is less than or equal to available space
+  # Check if required space is greater than available space
   if [ "$REQUIRED_SPACE" -gt "$AVAILABLE_SPACE" ]; 
     then
         abort "insufficient space ($AVAILABLE_SPACE GB available)"
@@ -61,7 +90,7 @@ createSwapSpace(){
     fi
 
     # If the swapfile was preserved, and doesn't need to be recreated
-    if [ "$VALUE" = "preserve" ];
+    if [ "$SIZE" = "preserve" ];
         then
             if ! [ -f "$SWAPFILE" ];
                 then abort "no existing swapfile"
@@ -71,7 +100,7 @@ createSwapSpace(){
             fi
         else
             # 1 Gigabyte = 1,048,576 Kilobytes
-            SIZE_KB="$((SIZE * 1048576))";
+            SIZE_KB=$((SIZE * 1048576));
 
             cprint "creating $SIZE GB swapfile"
             checkFreeSpace "$SIZE"
@@ -80,7 +109,11 @@ createSwapSpace(){
                 then
                     cprint "swap-off and delete existing swapfile"
                     swapoff "$SWAPFILE"
-                    rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
+                    rm -f "$SWAPFILE" || abort "cannot remove swapfile!"
+            fi
+
+            if [ "$SIZE_KB" -le 0 ]; 
+                then abort "Swap file size calculation error. Size is too small."; 
             fi
 
             dd if=/dev/zero of="$SWAPFILE" bs=1024 count="$SIZE_KB" 1>/dev/null
@@ -104,26 +137,24 @@ createSwapSpace(){
 
 case $COMMAND in
     "create")
-        # OPTIONALVALUE parameters
-        if [ -n "$OPTIONALVALUE" ] && ! echo "$OPTIONALVALUE" | grep -q -E '^[0-9]+$';
-            then abort "PRIORITY parameter must be a number (0-32767)"
-
-        elif [ -n "$OPTIONALVALUE" ] && [ ! "$OPTIONALVALUE" -ge 0 ] || [ ! "$OPTIONALVALUE" -le 32767 ];
-            then abort "PRIORITY parameter is not in range (0-32767)"
+    # OPTIONALVALUE parameters
+        if [ -n "$OPTIONALVALUE" ]; 
+            then validate_range "PRIORITY" "$OPTIONALVALUE" 0 32767 \
+                "PRIORITY parameter is not in range"
         fi
 
         # VALUE parameters
         if [ "$VALUE" = "preserve" ];
             then createSwapSpace "preserve" "$OPTIONALVALUE" 2>/dev/null
-
-        elif [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
-            then abort "VALUE parameter must be a number (1-100)"
-
-        elif [ -n "$VALUE" ] && [ "$VALUE" -ge 1 ] && [ "$VALUE" -le 100 ];
-            then createSwapSpace "$VALUE" "$OPTIONALVALUE" 2>/dev/null
-            else abort "VALUE parameter is missing, or not in range (1-100)"
+        elif [ -n "$VALUE" ];
+            then 
+                validate_swap_size "$VALUE"
+                createSwapSpace "$VALUE" "$OPTIONALVALUE" 2>/dev/null
+        else 
+            abort "VALUE parameter is missing, or not in range (1-1024)"
         fi
     ;; 
+
     "remove")
         if [ "$VALUE" = "preserve" ];
             then
@@ -132,37 +163,34 @@ case $COMMAND in
             else
                 cprint "swap-off, and remove swapfile"
                 swapoff "$SWAPFILE"
-                rm -rf "$SWAPFILE" || abort "cannot remove swapfile!"
+                rm -f "$SWAPFILE" || abort "cannot remove swapfile!"
         fi
 
         modifyProp ENABLE-SWAP false
         modifyProp SWAP-PRIORITY false
         cprint "(mss) has been disabled"
     ;;
+
     "status")
         if [ "$VALUE" = "swapon" ];
             then
                 cprint "performing a swap-on operation"
-
                 if toybox swapon "$SWAPFILE";
                     then cprint "successfully performed a swap-on operation";
                     else cprint "couldn't swap-on, maybe it's already mounted?";
                 fi
-
                 cprint "(hint): temporarily swap-off using (\"magiskswap status swapoff\")"
-            return
+                return
 
         elif [ "$VALUE" = "swapoff" ];
             then
                 cprint "performing a temporary swap-off operation"
- 
                 if toybox swapoff "$SWAPFILE";
                     then cprint "successfully performed a temporary swap-off operation";
                     else cprint "couldn't swap-off, maybe it's already dismounted?";
                 fi
-
                 cprint "(hint): swap-on using (\"magiskswap status swapon\")"
-            return
+                return
         fi
 
         if [ "$(readProp ENABLE-SWAP)" = "true" ];
@@ -173,6 +201,7 @@ case $COMMAND in
                 cprint "(mss) is not configured/disabled"
         fi
     ;;
+
     "swappiness")
         SWAPPINESS_BACKUP="$(readProp BACKUP-SWAP)"
         CURRENT_SWAPPINESS="$(sysctl -n "$SWAPPINESS_SYSCTL_ENTRY")"
@@ -182,10 +211,8 @@ case $COMMAND in
                 if [ "$SWAPPINESS_BACKUP" ];
                     then cprint "original/default VM swappiness: $SWAPPINESS_BACKUP"
                 fi
-
                 cprint "current VM swappiness: $CURRENT_SWAPPINESS"
             return
-
         elif [ "$VALUE" = "reset" ];
             then
                 if [ "$SWAPPINESS_BACKUP" ];
@@ -202,11 +229,14 @@ case $COMMAND in
             return
         fi
 
-        if [ -n "$VALUE" ] && ! echo "$VALUE" | grep -q -E '^[0-9]+$';
-            then abort "VALUE parameter must be a number (0-200)"
-
-        elif [ "$VALUE" -ge 0 ] && [ "$VALUE" -le 200 ];
+        if [ -n "$VALUE" ];
             then
+                MIN_SWAP=0
+                MAX_SWAP=200
+
+                validate_range "VALUE" "$VALUE" "$MIN_SWAP" "$MAX_SWAP" \
+                    "VALUE is missing, or not in range"
+
                 if [ "$VALUE" -eq 0 ];
                     then
                         cprint "WARNING: Setting swappiness to 0 stops swapping to disk completely"
@@ -215,12 +245,12 @@ case $COMMAND in
 
                 # Backup first, so the value can be reset without needing a reboot
                 modifyProp "BACKUP-SWAP" "$(sysctl -n "$SWAPPINESS_SYSCTL_ENTRY")"
-
+                
                 cprint "swappiness has been set to $VALUE"
                 setKernelTune "$SWAPPINESS_SYSCTL_ENTRY" "$VALUE"
                 modifyProp "SWAPPINESS" "$VALUE"
             else
-                abort "VALUE is missing, or not in range (0-200)"
+                abort "VALUE is missing, or not in range ($MIN_SWAP-$MAX_SWAP)"
         fi
     ;;
     *)
@@ -241,7 +271,7 @@ status [swapon] [swapoff]
   - Prints swapfile size and status
 
 swappiness <0-200> [show] [reset]
-  - Controls how agressively Linux swaps anonymous memory
+  - Controls how aggressively linux swaps anonymous memory
 
 () These commands are presistent across reboots ()
 
