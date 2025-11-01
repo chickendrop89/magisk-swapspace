@@ -1,3 +1,7 @@
+## 2.4
+- A small refactor of the logic
+- Fixed KernelSU OverlayFS "insufficient space (0 GB available)" errors
+
 ## 2.3
 - Remove vfs-cache-pressure as it's kinda unrelated to this module
 - Add proper permissions to the swapfile during creation
